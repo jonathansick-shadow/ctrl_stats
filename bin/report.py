@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# 
+#
 # LSST Data Management System
 # Copyright 2008-2012 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -10,14 +10,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -25,7 +25,8 @@
 #
 # report.py -H lsst10 -p 3306 -d testing -S
 
-import os, sys
+import os
+import sys
 import datetime
 import argparse
 from lsst.ctrl.stats.databaseManager import DatabaseManager
@@ -45,24 +46,32 @@ from lsst.ctrl.stats.data.terminationStatus import TerminationStatus
 from lsst.ctrl.stats.data.executingWorkers import ExecutingWorkers
 from lsst.ctrl.stats.data.coreUtilization import CoreUtilization
 
+
 def run():
     basename = os.path.basename(sys.argv[0])
 
-    parser = argparse.ArgumentParser(prog=basename, 
-                description='''A statistics reporting utility.  Use to print 
+    parser = argparse.ArgumentParser(prog=basename,
+                                     description='''A statistics reporting utility.  Use to print 
                             out information about what happened during a run.
                             Takes as an argument previously ingested run 
                             information one of the ingest utilities  in 
                             a named database.''',
-                epilog='''example:
+                                     epilog='''example:
 report.py -H kaboom.ncsa.illinois.edu -p 3303 -d srp_2013_0601_140432 -S''')
-    parser.add_argument("-H", "--host", action="store", default=None, dest="host", help="mysql server host", type=str, required=True)
-    parser.add_argument("-p", "--port", action="store", default=3306, dest="port", help="mysql server port", type=int)
-    parser.add_argument("-d", "--database", action="store", default=None, dest="database", help="database name", type=str, required=True)
-    parser.add_argument("-I", "--submits-per-interval", action="store_true", default=None, dest="submits", help="number of submits to the condor queue per interval")
-    parser.add_argument("-C", "--cores-used-each-second", action="store_true", default=None, dest="cores", help="cores used each second")
-    parser.add_argument("-N", "--cores-used-each-interval", type=int, default=-1, dest="interval", help="cores used each interval")
-    parser.add_argument("-S", "--summary", action="store_true", default=None, dest="summary", help="summary of run")
+    parser.add_argument("-H", "--host", action="store", default=None, dest="host",
+                        help="mysql server host", type=str, required=True)
+    parser.add_argument("-p", "--port", action="store", default=3306,
+                        dest="port", help="mysql server port", type=int)
+    parser.add_argument("-d", "--database", action="store", default=None,
+                        dest="database", help="database name", type=str, required=True)
+    parser.add_argument("-I", "--submits-per-interval", action="store_true", default=None,
+                        dest="submits", help="number of submits to the condor queue per interval")
+    parser.add_argument("-C", "--cores-used-each-second", action="store_true",
+                        default=None, dest="cores", help="cores used each second")
+    parser.add_argument("-N", "--cores-used-each-interval", type=int, default=-
+                        1, dest="interval", help="cores used each interval")
+    parser.add_argument("-S", "--summary", action="store_true",
+                        default=None, dest="summary", help="summary of run")
     parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", help="verbose")
 
     args = parser.parse_args()
@@ -70,17 +79,16 @@ report.py -H kaboom.ncsa.illinois.edu -p 3303 -d srp_2013_0601_140432 -S''')
     host = args.host
     port = args.port
     database = args.database
-    
+
     #
     # get database authorization info
     #
     dbAuth = DbAuth()
     user = dbAuth.username(host, str(port))
-    password = dbAuth.password(host,str(port))
+    password = dbAuth.password(host, str(port))
 
     # connect to the database
     dbm = DatabaseManager(host, port, user, password)
-
 
     dbm.execCommand0('use '+database)
 
@@ -97,11 +105,12 @@ report.py -H kaboom.ncsa.illinois.edu -p 3303 -d srp_2013_0601_140432 -S''')
         values = coresPerSecond.getValues()
         writeDateValues(values)
     elif args.interval > -1:
-        coresPerInterval = CoresPerInterval(dbm,entries, args.interval)
+        coresPerInterval = CoresPerInterval(dbm, entries, args.interval)
         values = coresPerInterval.getValues()
         writeDateValues(values)
     elif args.summary == True:
         printSummary(dbm, entries)
+
 
 def printCoreUtilizationSummary(dbm, entries):
     cu = CoreUtilization(dbm)
@@ -113,7 +122,7 @@ def printCoreUtilizationSummary(dbm, entries):
     print "Time until %d cores are used at least once: %s" % (cores, timeStamp(cu.getLastTime() - cu.getFirstTime()))
     print "First worker submit to %d cores used at least once: %s" % (cores, timeStamp(cu.getLastTime()-initialFirstWorker.submitTime))
     print
-    
+
 
 def printPreJobSummary(dbm, entries):
     # preJob
@@ -128,6 +137,7 @@ def printPreJobSummary(dbm, entries):
     print "PreJob time to start: %s" % timeStamp(startTime)
     print "PreJob run duration: %s" % timeStamp(runTime)
     print
+
 
 def printPostJobSummary(dbm, entries):
     # postJob
@@ -146,6 +156,7 @@ def printPostJobSummary(dbm, entries):
     print "PostJob run duration: %s" % timeStamp(runTime)
     print
 
+
 def printSummary(dbm, entries):
     executingWorkers = ExecutingWorkers(dbm)
 
@@ -157,7 +168,7 @@ def printSummary(dbm, entries):
     initialLastWorker = entries.getLastWorker()
     submissionDuration = initialLastWorker.submitTime-initialLastWorker.submitTime
 
-    count = entries.getLength()-2 # don't count preJob and postJob
+    count = entries.getLength()-2  # don't count preJob and postJob
     submissionDuration = initialLastWorker.submitTime-initialFirstWorker.submitTime
     print "Total worker submits: %d" % count
     print "Mean initial worker submissions per second: %d" % (count/float(submissionDuration))
@@ -170,9 +181,7 @@ def printSummary(dbm, entries):
     print "Initial submission - last worker %s submitted at %s" % (initialLastWorker.dagNode, dateTime(initialLastWorker.submitTime))
     print "Initial submission - first worker to last worker submitted: %s" % timeStamp(submissionDuration)
 
-
-        
-    # first executing worker is not necessarily the first 
+    # first executing worker is not necessarily the first
     # worker submitted, so look it up
     firstExecutingWorker = executingWorkers.getFirstExecutingWorker()
 
@@ -183,7 +192,6 @@ def printSummary(dbm, entries):
     print "First executing worker %s stopped at %s" % (dagNode, dateTime(stopTime))
     print "First executing worker %s run duration %s" % (dagNode, timeStamp(stopTime-startTime))
     print
-
 
     # last worker in the list
     lastWorker = entries.getLastWorker()
@@ -213,7 +221,7 @@ def printSummary(dbm, entries):
 
     workerRunTime = lastExecutingWorker.executionStopTime-firstExecutingWorker.executionStartTime
     print "First executing worker started to last executing worker finished: %s" % (timeStamp(workerRunTime))
-    postTime =  entries.getPostJobSubmitTime()
+    postTime = entries.getPostJobSubmitTime()
     if postTime is None:
         print
         print "Could not calculate delay of end of last executing worker"
@@ -252,7 +260,6 @@ def printSummary(dbm, entries):
     newJobStart = NewJobStart(dbm)
     totals = newJobStart.calculate()
 
-    
     # execution switch over
     if len(list(totals)) == 0:
         print "Could not calculate execution times between workers because"
@@ -263,7 +270,7 @@ def printSummary(dbm, entries):
         print "Time from the end of one worker until the next worker starts"
         totalStarts = 0
         totalMinutes = 0
-        for key,value in totals.iteritems():
+        for key, value in totals.iteritems():
             if key == -1:
                 print "Single worker started: %d worker%s total" % (value, 's' if value > 1 else '')
             else:
@@ -286,20 +293,25 @@ def printSummary(dbm, entries):
     termStatus = TerminationStatus(dbm)
     totals = termStatus.getTotals()
     for t in totals:
-        print "%s: %s" % (t[0],t[1])
-        
+        print "%s: %s" % (t[0], t[1])
+
 # return a formatted date string
+
+
 def dateTime(val):
     return datetime.datetime.fromtimestamp(val).strftime('%Y-%m-%d %H:%M:%S')
 
 # return the number of seconds
+
+
 def timeStamp(val):
     return str(datetime.timedelta(seconds=val))
+
 
 def jobRunTimes(ents):
     workers = 0
     totalRunTime = 0
-    maxRunTime = - sys.maxint -1
+    maxRunTime = - sys.maxint - 1
     minRunTime = sys.maxint
     length = ents.getLength()
     for i in range(length):
@@ -317,13 +329,13 @@ def jobRunTimes(ents):
         if runTime < minRunTime:
             minRunTime = runTime
         if runTime > maxRunTime:
-            maxRunTime = runTime;
+            maxRunTime = runTime
 
     if workers > 0:
         avg = totalRunTime/workers
     else:
         avg = 0
-        
+
     return minRunTime, maxRunTime, avg
 
 
